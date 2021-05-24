@@ -3,7 +3,7 @@
 </div>
 <div align=center>
 <img src="https://img.shields.io/badge/golang-1.11-blue"/>
-<img src="https://img.shields.io/badge/goframe-1.13.1-lightBlue"/>
+<img src="https://img.shields.io/badge/goframe-1.15.3-lightBlue"/>
 <img src="https://img.shields.io/badge/vue-2.6.10-brightgreen"/>
 <img src="https://img.shields.io/badge/element--ui-2.12.0-green"/>
 </div>
@@ -33,13 +33,14 @@ Online Preview ==> Server expired, online preview is temporarily not open
 
 Hi! First of all, thank you for using gf-vue-admin.
 
-GoFrame-vue-admin is a set of open source frameworks prepared for the back-end management platform with a separated architecture of front and back ends, aiming to quickly build a back-end management system.
+Gf-Vue-Admin is a set of open source frameworks prepared for the back-end management platform with a separated architecture of front and back ends, aiming to quickly build a back-end management system.
 
-The growth of GoFrame-vue-admin is inseparable from everyone's support. If you are willing to contribute code or provide suggestions for GoFrame-vue-admin, please read the following.
+The growth of Gf-Vue-Admin is inseparable from everyone's support. If you are willing to contribute code or provide suggestions for Gf-Vue-Admin, please read the following.
 
 #### 1.2.1 Issue specification
 
-- Issues are only used to submit bugs or features and design-related content, other content may be directly closed。If you have questions while using，Go to Slack or [Gitter](https://gitter.im/ElemeFE/element) Consulting。
+- Issues are only used to submit bugs or features and design-related content, other content may be directly closed。If you have questions while using，Go to Slack or [![Gitter](https://badges.gitter.im/Gf-Vue-Admin/community.svg)](https://gitter.im/Gf-Vue-Admin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+  Consulting。
 
 - Before submitting an issue, please search whether the relevant content has been submitted。
 
@@ -98,9 +99,38 @@ go build
 
 ### 2.3 swagger automation API documentation
 
-- Reasons to remove swagger
-	- Comment redundant code, resulting in bloated code
-	- Recommend alternative tool apipost
+#### 2.3.1 Installation swagger
+
+- You can climb over the wall.
+````
+go get -u github.com/swaggo/swag/cmd/swag
+````
+
+- Can't climb the wall.
+  Because it can not be installed in China. go.org/x What's under the bag.，Recommended use [goproxy.io](https://goproxy.io/zh/) Or [goproxy.cn/](https://goproxy.cn/)
+
+```bash
+# If you are using Go version 1.13 or above (recommended)
+# Enable Go Modules Function
+go env -w GO111MODULE=on 
+# Configuration GOPROXY Environment variable
+go env -w GOPROXY=https://goproxy.io,direct
+# Download swag using the following command
+go get -v github.com/swaggo/swag/cmd/swag
+```
+
+#### 2.3.2 Download the gf toolset
+
+[Download the tutorial](https://goframe.org/pages/viewpage.action?pageId=1114260)
+
+#### 2.3.3 Generate API documents
+
+````
+cd server
+gf swagger
+````
+
+After executing the above command, the docs folder appears in the server directory, open the browser and enter [http://localhost:8888/swaggerl](http://localhost:8888/swagger)，You can view the swagger document. 
 
 ## 3. Technical selection
 

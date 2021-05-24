@@ -21,11 +21,18 @@ export const user = {
             // 这里的 `state` 对象是模块的局部状态
             state.token = token
         },
+        NeedInit(state){
+            state.userInfo = {}
+            state.token = ""
+            sessionStorage.clear()
+            router.push({ name: 'init', replace: true })
+
+        },
         LoginOut(state) {
             state.userInfo = {}
             state.token = ""
-            router.push({ name: 'login', replace: true })
             sessionStorage.clear()
+            router.push({ name: 'login', replace: true })
             window.location.reload()
         },
         ResetUserInfo(state, userInfo = {}) {
@@ -35,17 +42,22 @@ export const user = {
         }
     },
     actions: {
-        async LoginIn({ commit }, loginInfo) {
+        async LoginIn({ commit, dispatch, rootGetters, getters }, loginInfo) {
             const res = await login(loginInfo)
             if (res.code == 0) {
                 commit('setUserInfo', res.data.user)
                 commit('setToken', res.data.token)
-                const redirect = router.history.current.query.redirect
-                if (redirect) {
-                    router.push({ path: redirect })
-                } else {
-                    router.push({ path: '/layout/dashboard' })
-                }
+                await dispatch('router/SetAsyncRouter', {}, { root: true })
+                const asyncRouters = rootGetters['router/asyncRouters']
+                router.addRoutes(asyncRouters)
+                // const redirect = router.history.current.query.redirect
+                // console.log(redirect)
+                // if (redirect) {
+                //     router.push({ path: redirect })
+                // } else {
+                    router.push({ name: getters["userInfo"].authority.defaultRouter })
+                // }
+                return true
             }
         },
         async LoginOut({ commit }) {

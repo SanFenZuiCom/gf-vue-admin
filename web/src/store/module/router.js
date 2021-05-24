@@ -8,7 +8,6 @@ const formatRouter = (routes) => {
         if ((!item.children || item.children.every(ch => ch.hidden)) && item.name != '404') {
             routerList.push({ label: item.meta.title, value: item.name })
         }
-        item.meta.hidden = item.hidden
         if (item.children && item.children.length > 0) {
             formatRouter(item.children)
         }
@@ -28,7 +27,7 @@ export const router = {
         // 设置动态路由
         setAsyncRouter(state, asyncRouters) {
             state.asyncRouters = asyncRouters
-        }
+        },
     },
     actions: {
         // 从后台获取动态路由
@@ -43,7 +42,10 @@ export const router = {
                 children: []
             }]
             const asyncRouterRes = await asyncMenu()
-            const asyncRouter = asyncRouterRes.data.menus
+            if(asyncRouterRes.code !=0){
+                return
+            }
+            const asyncRouter = asyncRouterRes.data&&asyncRouterRes.data.menus
             asyncRouter.push({
                 path: "404",
                 name: "404",
@@ -73,6 +75,9 @@ export const router = {
         },
         routerList(state) {
             return state.routerList
+        },
+        defaultRouter(state) {
+            return state.defaultRouter
         }
     }
 }

@@ -63,13 +63,12 @@
         </el-form-item>
         <el-form-item label="头像" label-width="80px">
           <div style="display:inline-block" @click="openHeaderChange">
-            <img class="header-img-box" v-if="userInfo.headerImg" :src="userInfo.headerImg" />
+            <img class="header-img-box" v-if="userInfo.headerImg" :src='(userInfo.headerImg && userInfo.headerImg.slice(0, 4) !== "http")?path+userInfo.headerImg:userInfo.headerImg' />
             <div v-else class="header-img-box">从媒体库选择</div>
           </div>
         </el-form-item>
         <el-form-item label="用户角色" label-width="80px" prop="authorityId">
           <el-cascader
-            @change="changeAuthority(scope.row)"
             v-model="userInfo.authorityId"
             :options="authOptions"
             :show-all-levels="false"
@@ -98,7 +97,7 @@ import {
   deleteUser
 } from "@/api/user";
 import { getAuthorityList } from "@/api/authority";
-import infoList from "@/components/mixins/infoList";
+import infoList from "@/mixins/infoList";
 import { mapGetters } from "vuex";
 import CustomPic from "@/components/customPic";
 import ChooseImg from "@/components/chooseImg";

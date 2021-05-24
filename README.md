@@ -3,7 +3,7 @@
 </div>
 <div align=center>
 <img src="https://img.shields.io/badge/golang-1.11-blue"/>
-<img src="https://img.shields.io/badge/goframe-1.13.1-lightBlue"/>
+<img src="https://img.shields.io/badge/goframe-1.15.3-lightBlue"/>
 <img src="https://img.shields.io/badge/vue-2.6.10-brightgreen"/>
 <img src="https://img.shields.io/badge/element--ui-2.12.0-green"/>
 </div>
@@ -31,13 +31,14 @@
 
 Hi! 首先感谢你使用 gf-vue-admin。
 
-GoFrame-vue-admin 是一套为后台管理平台准备的一整套前后端分离架构式的开源框架，旨在快速搭建后台管理系统。
+Gf-Vue-Admin 是一套为后台管理平台准备的一整套前后端分离架构式的开源框架，旨在快速搭建后台管理系统。
 
-GoFrame-vue-admin 的成长离不开大家的支持，如果你愿意为 GoFrame-vue-admin 贡献代码或提供建议，请阅读以下内容。
+Gf-Vue-Admin 的成长离不开大家的支持，如果你愿意为 Gf-Vue-Admin 贡献代码或提供建议，请阅读以下内容。
 
 #### 1.2.1 Issue 规范
 
-- issue 仅用于提交 Bug 或 Feature 以及设计相关的内容，其它内容可能会被直接关闭。如果你在使用时产生了疑问，请到 Slack 或 [Gitter](https://gitter.im/ElemeFE/element) 里咨询。
+- issue 仅用于提交 Bug 或 Feature 以及设计相关的内容，其它内容可能会被直接关闭。如果你在使用时产生了疑问，请到 Slack 或 [![Gitter](https://badges.gitter.im/Gf-Vue-Admin/community.svg)](https://gitter.im/Gf-Vue-Admin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+  里咨询。
 
 - 在提交 issue 之前，请搜索相关内容是否已被提出。
 
@@ -96,10 +97,38 @@ go build
 
 ### 2.3 swagger自动化API文档
 
-- 去掉swagger的原因
-	- 注释多余代码,导致代码臃肿
-	- 推荐替代工具apipost
+#### 2.3.1 安装 swagger
 
+- 可以翻墙
+````
+go get -u github.com/swaggo/swag/cmd/swag
+````
+
+- 无法翻墙
+  由于国内没法安装 go.org/x 包下面的东西，推荐使用 [goproxy.io](https://goproxy.io/zh/) 或者 [goproxy.cn/](https://goproxy.cn/)
+
+```bash
+# 如果您使用的 Go 版本是 1.13 及以上(推荐)
+# 启用 Go Modules 功能
+go env -w GO111MODULE=on 
+# 配置 GOPROXY 环境变量
+go env -w GOPROXY=https://goproxy.io,direct
+# 使用如下命令下载swag
+go get -v github.com/swaggo/swag/cmd/swag
+```
+
+#### 2.3.2 下载gf工具集
+
+[下载教程](https://goframe.org/pages/viewpage.action?pageId=1114260)
+
+#### 2.3.3 生成API文档
+
+````
+cd server
+gf swagger
+````
+
+执行上面的命令后，server目录下会出现docs文件夹，打开浏览器输入 [http://localhost:8888/swaggerl](http://localhost:8888/swagger)，即可查看swagger文档
 
 ## 3. 技术选型
 

@@ -36,7 +36,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button @click="getColume" type="primary">使用此表创建</el-button>
+            <el-button @click="getColumn" type="primary">使用此表创建</el-button>
           </el-form-item>
         </el-form>
       </el-collapse-item>
@@ -58,10 +58,13 @@
         <el-input v-model="form.description" placeholder="中文描述作为自动api描述"></el-input>
       </el-form-item>
       <el-form-item label="文件名称" prop="packageName">
-        <el-input v-model="form.packageName"></el-input>
+        <el-input v-model="form.packageName" placeholder="生成文件的默认名称"></el-input>
       </el-form-item>
       <el-form-item label="自动创建api">
         <el-checkbox v-model="form.autoCreateApiToSql"></el-checkbox>
+      </el-form-item>
+      <el-form-item label="自动移动文件">
+        <el-checkbox v-model="form.autoMoveFile"></el-checkbox>
       </el-form-item>
     </el-form>
     <!-- 组件列表 -->
@@ -111,13 +114,11 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-tag type="danger">gdb会自动识别create_at , update_at , delete_at这三个字段, 这三个字段的类型必须为时间类型，如datetime, timestamp</el-tag><br>
-    <el-tag type="danger">create_at用于记录创建时更新，仅会写入一次。</el-tag><br>
-    <el-tag type="danger">update_at用于记录修改时更新，每次记录变更时更新。</el-tag><br>
-    <el-tag type="danger">delete_at用于记录的软删除特性，只有当记录删除时会写入一次。</el-tag><br>
+    <el-tag type="danger">id , created_at , updated_at , deleted_at 会自动生成请勿重复创建</el-tag>
     <!-- 组件列表 -->
     <div class="button-box clearflex">
-      <el-button @click="enterForm" type="primary">生成代码包</el-button>
+      <el-button @click="enterForm(true)" type="primary">预览代码</el-button>
+      <el-button @click="enterForm(false)" type="primary">生成代码</el-button>
     </div>
     <!-- 组件弹窗 -->
     <el-dialog title="组件内容" :visible.sync="dialogFlag">
@@ -125,6 +126,13 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">取 消</el-button>
         <el-button type="primary" @click="enterDialog">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog :visible.sync="previewFlag">
+      <PreviewCodeDialg v-if="previewFlag" :previewCode="preViewCode"></PreviewCodeDialg>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="previewFlag = false">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -140,12 +148,13 @@ const fieldTemplate = {
   dataTypeLong: "",
   comment: "",
   fieldSearchType: "",
-  dictType:""
+  dictType: ""
 };
 
 import FieldDialog from "@/view/systemTools/autoCode/component/fieldDialog.vue";
+import PreviewCodeDialg from "@/view/systemTools/autoCode/component/previewCodeDialg.vue";
 import { toUpperCase, toHump } from "@/utils/stringFun.js";
-import { createTemp, getDB, getTable, getColume } from "@/api/autoCode.js";
+import { createTemp, getDB, getTable, getColumn, preview } from "@/api/autoCode.js";
 import { getDict } from "@/utils/dictionary";
 
 export default {
@@ -153,6 +162,7 @@ export default {
   data() {
     return {
       activeNames: [""],
+      preViewCode:{},
       dbform: {
         dbName: "",
         tableName: ""
@@ -168,6 +178,7 @@ export default {
         abbreviation: "",
         description: "",
         autoCreateApiToSql: false,
+        autoMoveFile: false,
         fields: []
       },
       rules: {
@@ -190,11 +201,13 @@ export default {
       },
       dialogMiddle: {},
       bk: {},
-      dialogFlag: false
+      dialogFlag: false,
+      previewFlag:false
     };
   },
   components: {
-    FieldDialog
+    FieldDialog,
+    PreviewCodeDialg
   },
   methods: {
     editAndAddField(item) {
@@ -249,7 +262,7 @@ export default {
     deleteField(index) {
       this.form.fields.splice(index, 1);
     },
-    async enterForm() {
+    async enterForm(isPreview) {
       if (this.form.fields.length <= 0) {
         this.$message({
           type: "error",
@@ -276,23 +289,38 @@ export default {
             });
             return false;
           }
-          const data = await createTemp(this.form);
-          const blob = new Blob([data]);
-          const fileName = "gf-vue-admin.zip";
-          if ("download" in document.createElement("a")) {
-            // 不是IE浏览器
-            let url = window.URL.createObjectURL(blob);
-            let link = document.createElement("a");
-            link.style.display = "none";
-            link.href = url;
-            link.setAttribute("download", fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link); // 下载完成移除元素
-            window.URL.revokeObjectURL(url); // 释放掉blob对象
-          } else {
-            // IE 10+
-            window.navigator.msSaveBlob(blob, fileName);
+          if(isPreview){
+            const data = await preview(this.form);
+            console.log(data.code == 0)
+            this.preViewCode = data.data.autoCode
+            this.previewFlag = true
+          }else{
+            const data = await createTemp(this.form);
+            if (data.headers?.success == "false") {
+              return;
+            } else {
+              this.$message({
+                type: "success",
+                message: "自动化代码创建成功，正在下载"
+              });
+            }
+            const blob = new Blob([data]);
+            const fileName = "generate.zip";
+            if ("download" in document.createElement("a")) {
+              // 不是IE浏览器
+              let url = window.URL.createObjectURL(blob);
+              let link = document.createElement("a");
+              link.style.display = "none";
+              link.href = url;
+              link.setAttribute("download", fileName);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link); // 下载完成移除元素
+              window.URL.revokeObjectURL(url); // 释放掉blob对象
+            } else {
+              // IE 10+
+              window.navigator.msSaveBlob(blob, fileName);
+            }
           }
         } else {
           return false;
@@ -312,44 +340,43 @@ export default {
       }
       this.dbform.tableName = "";
     },
-    async getColume() {
-      // const gormModelList = ["id", "created_at", "updated_at", "deleted_at"];
-      const gormModelList = [""];
-      const res = await getColume(this.dbform);
+    async getColumn() {
+      const gormModelList = ["id", "created_at", "updated_at", "deleted_at"];
+      const res = await getColumn(this.dbform);
       if (res.code == 0) {
         const tbHump = toHump(this.dbform.tableName);
         this.form.structName = toUpperCase(tbHump);
         this.form.tableName = this.dbform.tableName;
-        this.form.packageName = this.dbform.tableName;
-        this.form.abbreviation = this.dbform.tableName;
-        this.form.description = this.dbform.tableName + "表";
+        this.form.packageName = tbHump;
+        this.form.abbreviation = tbHump;
+        this.form.description = tbHump + "表";
         this.form.autoCreateApiToSql = true;
         this.form.fields = [];
-        res.data.columes &&
-          res.data.columes.map(item => {
-            if (!gormModelList.some(gormfd => gormfd == item.columeName)) {
-              const fbHump = toHump(item.columeName);
+        res.data.columns &&
+          res.data.columns.map(item => {
+            if (!gormModelList.some(gormfd => gormfd == item.columnName)) {
+              const fbHump = toHump(item.columnName);
               this.form.fields.push({
                 fieldName: toUpperCase(fbHump),
-                fieldDesc: item.columeComment || fbHump + "字段",
+                fieldDesc: item.columnComment || fbHump + "字段",
                 fieldType: this.fdMap[item.dataType],
                 dataType: item.dataType,
                 fieldJson: fbHump,
                 dataTypeLong: item.dataTypeLong,
-                columnName: item.columeName,
-                comment: item.columeComment,
+                columnName: item.columnName,
+                comment: item.columnComment,
                 fieldSearchType: "",
-                dictType:""
+                dictType: ""
               });
             }
           });
       }
     },
     async setFdMap() {
-      const fdTpyes = ["string", "int", "bool", "float64", "time.Time"];
-      fdTpyes.map(async fdtype => {
+      const fdTypes = ["string", "int", "bool", "float64", "time.Time"];
+      fdTypes.map(async fdtype => {
         const res = await getDict(fdtype);
-        res.map(item => {
+        res&&res.map(item => {
           this.fdMap[item.label] = fdtype;
         });
       });
@@ -365,6 +392,7 @@ export default {
 .button-box {
   padding: 10px 20px;
   .el-button {
+    margin-right: 20px;
     float: right;
   }
 }

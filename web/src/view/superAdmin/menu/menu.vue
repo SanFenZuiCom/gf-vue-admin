@@ -97,8 +97,9 @@
             v-model="form.parentId"
           ></el-cascader>
         </el-form-item>
-        <el-form-item label="文件路径" prop="component" style="width:30%">
+        <el-form-item label="文件路径" prop="component" style="width:60%">
           <el-input autocomplete="off" v-model="form.component"></el-input>
+          <span style="font-size:12px;margin-right:12px;">如果菜单包含子菜单，请创建router-view二级路由页面或者</span><el-button size="mini" @click="form.component = 'view/routerHolder.vue'">点我设置</el-button>
         </el-form-item>
         <el-form-item label="展示名称" prop="meta.title" style="width:30%">
           <el-input autocomplete="off" v-model="form.meta.title"></el-input>
@@ -113,6 +114,12 @@
         </el-form-item>
         <el-form-item label="keepAlive" prop="meta.keepAlive" style="width:30%">
           <el-select placeholder="是否keepAlive缓存页面" v-model="form.meta.keepAlive">
+            <el-option :value="false" label="否"></el-option>
+            <el-option :value="true" label="是"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="closeTab" prop="meta.closeTab" style="width:30%">
+          <el-select placeholder="是否自动关闭tab" v-model="form.meta.closeTab">
             <el-option :value="false" label="否"></el-option>
             <el-option :value="true" label="是"></el-option>
           </el-select>
@@ -181,7 +188,7 @@ import {
   deleteBaseMenu,
   getBaseMenuById
 } from "@/api/menu";
-import infoList from "@/components/mixins/infoList";
+import infoList from "@/mixins/infoList";
 import icon from "@/view/superAdmin/menu/icon";
 export default {
   name: "Menus",
@@ -209,6 +216,7 @@ export default {
           title: "",
           icon: "",
           defaultMenu: false,
+          closeTab: false,
           keepAlive: false
         },
         parameters: []
@@ -231,8 +239,8 @@ export default {
   },
   methods: {
     addParameter(form) {
-      if (!form.parameters){
-        form.parameters = []
+      if (!form.parameters) {
+        this.$set(form, "parameters", []);
       }
       form.parameters.push({
         type: "query",
@@ -316,6 +324,9 @@ export default {
               type: "success",
               message: "删除成功!"
             });
+            if (this.tableData.length == 1) {
+              this.page--;
+            }
             this.getTableData();
           }
         })

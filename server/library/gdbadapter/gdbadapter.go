@@ -3,7 +3,6 @@ package gdbadapter
 import (
 	"fmt"
 	"runtime"
-	"server/library/global"
 
 	"github.com/gogf/gf/database/gdb"
 
@@ -19,6 +18,10 @@ type CasbinRule struct {
 	V3    string `orm:"v3" json:"v3"`
 	V4    string `orm:"v4" json:"v4"`
 	V5    string `orm:"v5" json:"v5"`
+}
+
+func (c *CasbinRule) TableName() string {
+	return "casbin_rule"
 }
 
 // Adapter represents the gdb adapter for policy storage.
@@ -69,8 +72,8 @@ func NewAdapter(driverName string, dataSourceName string) (*Adapter, error) {
 func NewAdapterByConfig() (a *Adapter, err error) {
 	a = &Adapter{}
 	a.tableName = "casbin_rule"
-	a.db, err = gdb.New(global.Db)
-	if err := a.createTable(); err != nil {
+	a.db, err = gdb.New("default")
+	if err = a.createTable(); err != nil {
 		return a, err
 	}
 	// Call the destructor when the object is released.
@@ -342,7 +345,7 @@ func (a *Adapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int,
 
 func (a *Adapter) rawDelete(tx *gdb.TX, line CasbinRule) error {
 	db := tx.Table(a.tableName).Safe()
-	condition := gdb.Map{"ptype": line.PType}
+	condition := gdb.Map{"p_type": line.PType}
 	if line.V0 != "" {
 		condition["v0"] = line.V0
 	}
